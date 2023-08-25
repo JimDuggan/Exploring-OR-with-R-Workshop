@@ -9,5 +9,6 @@ install.packages("lpSolve")
 install.packages("igraph")
 install.packages("furrr")
 install.packages("future")
+install.packages("ggpubr")
 
 
