@@ -161,94 +161,99 @@ run_sim <- function(run_id=1,
 #-------------------------------------------------------------------------------
 # Run one simulation
 #-------------------------------------------------------------------------------
-net <- generate_random_network(1000,seed=T)
-names(net)
-table(degree(net$graph))
-
-res <- run_sim(net = net,
-               end_time = 80)
-dplyr::glimpse(res)
-
-res %>% dplyr::filter(agent_id %in% 1:10,state_pa_to_a==TRUE) %>%
-  dplyr::select(run_id,agent_id,sim_time,state_pa_to_a)
-
-
-ar <- res %>%
-  dplyr::group_by(sim_time) %>%
-  dplyr::summarise(Adoptions=sum(state_pa_to_a,na.rm = T)) %>%
-  dplyr::ungroup()
-ar
-
-p1 <- ggplot(ar,aes(x=sim_time,y=Adoptions))+geom_point()+geom_line()
-p1
-
-states <- res %>% 
-  dplyr::group_by(sim_time) %>% 
-  dplyr::summarise(PA=sum(pa_state),A=sum(a_state)) %>%
-  tidyr::pivot_longer(PA:A,
-                      names_to = "State",
-                      values_to = "Number")
-p2 <- ggplot(states,aes(x=sim_time,y=Number,colour=State,fill=State))+geom_area()
-p2
-
-not_adopted <- res %>% 
-  dplyr::filter(sim_time==80,pa_state==TRUE) %>%
-  dplyr::pull(num_connections) %>%
-  table()
-not_adopted
+run_once <- function(){
+  net <- generate_random_network(1000,seed=T)
+  names(net)
+  table(degree(net$graph))
+  
+  res <- run_sim(net = net,
+                 end_time = 80)
+  dplyr::glimpse(res)
+  
+  res %>% dplyr::filter(agent_id %in% 1:10,state_pa_to_a==TRUE) %>%
+    dplyr::select(run_id,agent_id,sim_time,state_pa_to_a)
+  
+  
+  ar <- res %>%
+    dplyr::group_by(sim_time) %>%
+    dplyr::summarise(Adoptions=sum(state_pa_to_a,na.rm = T)) %>%
+    dplyr::ungroup()
+  ar
+  
+  p1 <- ggplot(ar,aes(x=sim_time,y=Adoptions))+geom_point()+geom_line()
+  p1
+  
+  states <- res %>% 
+    dplyr::group_by(sim_time) %>% 
+    dplyr::summarise(PA=sum(pa_state),A=sum(a_state)) %>%
+    tidyr::pivot_longer(PA:A,
+                        names_to = "State",
+                        values_to = "Number")
+  p2 <- ggplot(states,aes(x=sim_time,y=Number,colour=State,fill=State))+geom_area()
+  p2
+  
+  not_adopted <- res %>% 
+    dplyr::filter(sim_time==80,pa_state==TRUE) %>%
+    dplyr::pull(num_connections) %>%
+    table()
+  not_adopted
+  
+}
 
 
 #-------------------------------------------------------------------------------
 # Run multiple simulations
 #-------------------------------------------------------------------------------
-net <- generate_random_network(1000,seed=T)
-conns <- degree(net$graph)
-inits <- c(Lowest=which(conns == 1)[1], 
-           Highest=which(conns == max(conns))[1],
-           Mean=which(conns == floor(mean(conns)))[1])
-inits
+run_many <- function(){
+  net <- generate_random_network(1000,seed=T)
+  conns <- degree(net$graph)
+  inits <- c(Lowest=which(conns == 1)[1], 
+             Highest=which(conns == max(conns))[1],
+             Mean=which(conns == floor(mean(conns)))[1])
+  inits
 
-plan(multisession)
+  plan(multisession)
 
-NSim <- 9
-sims  <- furrr::future_map2(1:NSim,
-                            rep(inits,NSim/3),
-                            ~run_sim(run_id = .x,
-                                     net    = net,
-                                     adopters = .y,
-                                     end_time = 80),
-                            .options = furrr_options(seed = T)) %>%
+  NSim <- 9
+  sims  <- furrr::future_map2(1:NSim,
+                              rep(inits,NSim/3),
+                              ~run_sim(run_id = .x,
+                                       net    = net,
+                                       adopters = .y,
+                                       end_time = 80),
+                              .options = furrr_options(seed = T)) %>%
   dplyr::bind_rows()
-sims
+  
+  sims
 
-ar <- sims %>%
-  dplyr::group_by(run_id,sim_time) %>%
-  dplyr::summarise(Adoptions=sum(state_pa_to_a,na.rm = T)) %>%
-  dplyr::mutate(run_desc=case_when(
-    run_id %% 3 == 1 ~ "Lowest Connections",
-    run_id %% 3 == 2 ~ "Highest Connections",
-    run_id %% 3 == 0 ~ "Mean Connections")) %>%
+  ar <- sims %>%
+    dplyr::group_by(run_id,sim_time) %>%
+    dplyr::summarise(Adoptions=sum(state_pa_to_a,na.rm = T)) %>%
+    dplyr::mutate(run_desc=case_when(
+      run_id %% 3 == 1 ~ "Lowest Connections",
+      run_id %% 3 == 2 ~ "Highest Connections",
+      run_id %% 3 == 0 ~ "Mean Connections")) %>%
+    dplyr::ungroup()
+
+  p1 <- ggplot(ar,aes(x=sim_time,y=Adoptions,group=run_id,colour=run_desc))+
+          geom_point()+geom_line()+facet_wrap(~run_desc,nrow = 3)
+  p1
+
+  quants <- ar %>% 
+    dplyr::group_by(run_desc,sim_time) %>%
+    dplyr::summarise(Q05=quantile(Adoptions,0.05),
+                     Q95=quantile(Adoptions,0.95),
+                     Mean=mean(Adoptions)) %>%
   dplyr::ungroup()
 
-p1 <- ggplot(ar,aes(x=sim_time,y=Adoptions,group=run_id,colour=run_desc))+
-  geom_point()+geom_line()+facet_wrap(~run_desc,nrow = 3)
-p1
+  quants
 
-quants <- ar %>% 
-  dplyr::group_by(run_desc,sim_time) %>%
-  dplyr::summarise(Q05=quantile(Adoptions,0.05),
-                   Q95=quantile(Adoptions,0.95),
-                   Mean=mean(Adoptions)) %>%
-  dplyr::ungroup()
+  p4 <- ggplot(quants,aes(x=sim_time,y=Mean,colour=run_desc,group=run_desc))+
+    geom_ribbon(aes(ymin=Q05,ymax=Q95,fill=run_desc,group=run_desc),alpha=0.2)+
+    geom_line(size=2)
 
-quants
-
-p4 <- ggplot(quants,aes(x=sim_time,y=Mean,colour=run_desc,group=run_desc))+
-  geom_ribbon(aes(ymin=Q05,ymax=Q95,fill=run_desc,group=run_desc),alpha=0.2)+
-  geom_line(size=2)
-
-p4
-
+  p4
+}
 
 
 
