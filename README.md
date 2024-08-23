@@ -1,3 +1,5 @@
+![](or66.jpg?raw=true)
+
 ### Exploring Operations Research with R
 
 *Management is the process of converting information into action. The conversion process we call decision making.* [**Jay W. Forrester**](https://en.wikipedia.org/wiki/Jay_Wright_Forrester), [*Industrial Dynamics (1961)*](https://www.amazon.co.uk/Industrial-Dynamics-Jay-W-Forrester/dp/1883823366).
@@ -8,10 +10,6 @@
 
 
 ### Exploring-OR-with-R-Workshop
-
-![](or66.jpg?raw=true)
-
-
 Material to support my [OR66](https://www.theorsociety.com/ORS/Events/2024/OR66/OR66.aspx?EventKey=OR66&EventKey=OR66&WebsiteKey=c1745213-aec0-45e5-a960-0ec98ebabd4e) Workshop **Making an Impact - Exploring Operations Research with R** in Bangor, September 2024.
 
 There are five objectives of the workshop, which are to:
