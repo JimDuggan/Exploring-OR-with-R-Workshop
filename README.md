@@ -12,7 +12,7 @@
 ![](or66.jpg?raw=true)
 
 
-Material to support my OR66 Workshop **Making an Impact - Exploring Operations Research with R** in Bangor, September 2023.
+Material to support my [OR66](https://www.theorsociety.com/ORS/Events/2024/OR66/OR66.aspx?EventKey=OR66&EventKey=OR66&WebsiteKey=c1745213-aec0-45e5-a960-0ec98ebabd4e) Workshop **Making an Impact - Exploring Operations Research with R** in Bangor, September 2024.
 
 There are five objectives of the workshop, which are to:
 
