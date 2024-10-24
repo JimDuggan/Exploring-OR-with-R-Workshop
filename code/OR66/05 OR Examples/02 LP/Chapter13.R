@@ -4,8 +4,6 @@ library(lpSolve)
 
 z <- c(3,2)
 
-
-
 cons <- matrix(c(1,2,
                  2,1,
                  -1,1,

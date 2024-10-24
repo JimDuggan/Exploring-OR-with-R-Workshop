@@ -89,6 +89,23 @@ summarise(test_g,
 
 
 
+x1 <- filter(observations, station=="MACE HEAD")
+
+x2 <- arrange(x1, desc(temp))
+
+x3 <- filter(observations, station=="MACE HEAD") %>%
+      arrange(desc(temp))
+
+x3 <- observations %>%
+       filter(station=="MACE HEAD") %>%
+       arrange(desc(temp))
+
+x4 <- observations |>
+  filter(station=="MACE HEAD") |>
+  arrange(desc(temp))
+
+
+
 
 
 
